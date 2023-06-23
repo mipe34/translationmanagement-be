@@ -15,30 +15,7 @@ namespace TranslationManagement.Dal.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "5.0.2");
 
-            modelBuilder.Entity("TranslationManagement.Api.Controlers.TranslatorManagementController+TranslatorModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CreditCardNumber")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("HourlyRate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Translators");
-                });
-
-            modelBuilder.Entity("TranslationManagement.Api.Controllers.TranslationJobController+TranslationJob", b =>
+            modelBuilder.Entity("TranslationManagement.Dal.Models.TranslationJob", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,11 +27,11 @@ namespace TranslationManagement.Dal.Migrations
                     b.Property<string>("OriginalContent")
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("Price")
+                    b.Property<float>("Price")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("TranslatedContent")
                         .HasColumnType("TEXT");
@@ -62,6 +39,29 @@ namespace TranslationManagement.Dal.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TranslationJobs");
+                });
+
+            modelBuilder.Entity("TranslationManagement.Dal.Models.Translator", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreditCardNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<float>("HourlyRate")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Translators");
                 });
 #pragma warning restore 612, 618
         }

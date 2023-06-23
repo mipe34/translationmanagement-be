@@ -12,9 +12,9 @@ namespace TranslationManagement.Dal.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    CustomerName = table.Column<string>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", nullable: true),
-                    OriginalContent = table.Column<string>(type: "TEXT", nullable: true),
+                    CustomerName = table.Column<string>(type: "TEXT", nullable: false),
+                    Status = table.Column<byte>(type: "TINYINT", nullable: false),
+                    OriginalContent = table.Column<string>(type: "TEXT", nullable: false),
                     TranslatedContent = table.Column<string>(type: "TEXT", nullable: true),
                     Price = table.Column<double>(type: "REAL", nullable: false)
                 },
@@ -29,9 +29,9 @@ namespace TranslationManagement.Dal.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    HourlyRate = table.Column<string>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    HourlyRate = table.Column<double>(type: "REAL", nullable: false),
+                    Status = table.Column<byte>(type: "TINYINT", nullable: false),
                     CreditCardNumber = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>

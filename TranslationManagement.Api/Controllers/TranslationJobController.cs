@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TranslationManagement.Api.Controlers;
 using TranslationManagement.Dal;
+using TranslationManagement.Dal.Enums;
 using TranslationManagement.Dal.Models;
 
 namespace TranslationManagement.Api.Controllers
@@ -40,7 +41,7 @@ namespace TranslationManagement.Api.Controllers
             return _context.TranslationJobs.ToArray();
         }
 
-        const double PricePerCharacter = 0.01;
+        const float PricePerCharacter = 0.01f;
         private void SetPrice(TranslationJob job)
         {
             job.Price = job.OriginalContent.Length * PricePerCharacter;
@@ -49,7 +50,7 @@ namespace TranslationManagement.Api.Controllers
         [HttpPost]
         public bool CreateJob(TranslationJob job)
         {
-            job.Status = "New";
+            job.Status = JobStatusEnum.New;
             SetPrice(job);
             _context.TranslationJobs.Add(job);
             bool success = _context.SaveChanges() > 0;
@@ -100,18 +101,18 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
-        public string UpdateJobStatus(int jobId, int translatorId, string newStatus = "")
+        public string UpdateJobStatus(int jobId, int translatorId, JobStatusEnum newStatus)
         {
             _logger.LogInformation("Job status update request received: " + newStatus + " for job " + jobId.ToString() + " by translator " + translatorId);
-            if (typeof(JobStatuses).GetProperties().Count(prop => prop.Name == newStatus) == 0)
-            {
-                return "invalid status";
-            }
+            //if (typeof(JobStatuses).GetProperties().Count(prop => prop.Name == newStatus) == 0)
+            //{
+            //    return "invalid status";
+            //}
 
             var job = _context.TranslationJobs.Single(j => j.Id == jobId);
 
-            bool isInvalidStatusChange = (job.Status == JobStatuses.New && newStatus == JobStatuses.Completed) ||
-                                         job.Status == JobStatuses.Completed || newStatus == JobStatuses.New;
+            bool isInvalidStatusChange = (job.Status == JobStatusEnum.New && newStatus == JobStatusEnum.Completed) ||
+                                         job.Status == JobStatusEnum.Completed || newStatus == JobStatusEnum.New;
             if (isInvalidStatusChange)
             {
                 return "invalid status change";
