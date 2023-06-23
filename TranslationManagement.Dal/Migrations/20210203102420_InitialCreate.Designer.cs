@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TranslationManagement.Api;
+using TranslationManagement.Dal;
 
-namespace TranslationManagement.Api.Migrations
+namespace TranslationManagement.Dal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20210203102420_InitialCreate")]
