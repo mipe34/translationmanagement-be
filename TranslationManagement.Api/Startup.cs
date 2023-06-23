@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace TranslationManagement.Api
 {
@@ -24,7 +25,20 @@ namespace TranslationManagement.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TranslationManagement.Api", Version = "v1" });
             });
 
-            services.AddDbContext<AppDbContext>(options => 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("DevelopmentCors",
+                    builder =>
+                    {
+                        builder.AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .SetIsOriginAllowed(_ => true)
+                               .AllowCredentials();
+                    });
+
+            });
+
+            services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite("Data Source=TranslationAppDatabase.db"));
         }
 
@@ -34,7 +48,10 @@ namespace TranslationManagement.Api
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TranslationManagement.Api v1"));
 
             app.UseRouting();
-            app.UseAuthorization();
+            if (env.IsDevelopment())
+            {
+                app.UseCors("DevelopmentCors");
+            }
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
