@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using TranslationManagement.Dal;
 using TranslationManagement.Bll.Services;
+using TranslationManagement.Bll.Services.TranslationJobFileReader;
 
 namespace TranslationManagement.Api
 {
@@ -47,6 +48,7 @@ namespace TranslationManagement.Api
                 options.UseSqlite("Data Source=TranslationAppDatabase.db"));
 
             services.AddScoped<TranslationJobService>();
+            services.AddSingleton<TranslationJobFileReaderFactory>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

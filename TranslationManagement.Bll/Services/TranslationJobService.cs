@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml.Linq;
 using TranslationManagement.Bll.Models;
 using TranslationManagement.Bll.Models.TransactionJob;
+using TranslationManagement.Bll.Services.TranslationJobFileReader;
 using TranslationManagement.Dal;
 using TranslationManagement.Dal.Enums;
 using TranslationManagement.Dal.Models;
@@ -19,12 +20,13 @@ namespace TranslationManagement.Bll.Services
 
         private readonly AppDbContext _context;
         private readonly ILogger<TranslationJobService> _logger;
+        private readonly TranslationJobFileReaderFactory _translationJobFileReaderFactory;
 
-        public TranslationJobService(ILogger<TranslationJobService> logger, AppDbContext ctx)
+        public TranslationJobService(ILogger<TranslationJobService> logger, AppDbContext ctx, TranslationJobFileReaderFactory translationJobFileReaderFactory)
         {
-            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             _logger = logger;
             _context = ctx;
+            _translationJobFileReaderFactory = translationJobFileReaderFactory;
         }
 
         public TranslationJob[] GetJobs()
@@ -57,33 +59,12 @@ namespace TranslationManagement.Bll.Services
             return null;
         }
 
-        public TranslationJob CreateJobWithFile(CreateTranslationJobFileModel transactionJobFileModel)
+        public TranslationJob CreateJobWithFile(CreateTranslationJobFileModel translationJobFileModel)
         {
-            using var reader = new StreamReader(transactionJobFileModel.FileStream);
-            string content;
-            string customerName = null;
-            // TODO refactor with factory 
-            if (transactionJobFileModel.FileName.EndsWith(".txt"))
-            {
-                content = reader.ReadToEnd();
-            }
-            else if (transactionJobFileModel.FileName.EndsWith(".xml"))
-            {
-                var xdoc = XDocument.Parse(reader.ReadToEnd());
-                content = xdoc.Root.Element("Content").Value;
-                customerName = xdoc.Root.Element("Customer").Value.Trim();
-            }
-            else
-            {
-                throw new NotSupportedException("unsupported file");
-            }
-            var createTranlationJobModel = new CreateTranslationJobModel()
-            {
-                CustomerName = customerName ?? transactionJobFileModel.CustomerName,
-                OriginalContent = content
-            };
+            var fileReader = _translationJobFileReaderFactory.GetTranslationJobFileReader(translationJobFileModel.FileName);
+            var jobModel = fileReader.ReadFile(translationJobFileModel);
 
-            return CreateJob(createTranlationJobModel);
+            return CreateJob(jobModel);
         }
 
         public ActionResultModel<TranslationJob> UpdateJobStatus(UpdateTranslationJobStatusModel transactionJobStatusModel)

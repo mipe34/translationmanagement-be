@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TranslationManagement.Bll.Services
 {
+    // TODO move business logic from Translator controller to translator service
     public class TranslatorService
     {
     }
