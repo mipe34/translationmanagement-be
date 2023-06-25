@@ -14,6 +14,7 @@ namespace TranslationManagement.Dal.Models
 
         public void SetPrice(float pricePerCharacter)
         {
+            if(pricePerCharacter < 0) pricePerCharacter = 0;
             Price = OriginalContent.Length * pricePerCharacter;
         }
 

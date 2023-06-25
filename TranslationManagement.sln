@@ -24,6 +24,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslationManagement.Dal",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslationManagement.Bll", "TranslationManagement.Bll\TranslationManagement.Bll.csproj", "{95797628-5CB4-4CFF-8479-D66EAD8C6799}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9EF2C8CD-B94D-46AB-ABD2-EB19929B1784}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslationManagement.Dal.Tests", "TranslationManagement.Dal.Tests\TranslationManagement.Dal.Tests.csproj", "{D3B28071-75C7-49B0-8561-B1CD76268EB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,9 +50,16 @@ Global
 		{95797628-5CB4-4CFF-8479-D66EAD8C6799}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95797628-5CB4-4CFF-8479-D66EAD8C6799}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95797628-5CB4-4CFF-8479-D66EAD8C6799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3B28071-75C7-49B0-8561-B1CD76268EB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3B28071-75C7-49B0-8561-B1CD76268EB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3B28071-75C7-49B0-8561-B1CD76268EB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3B28071-75C7-49B0-8561-B1CD76268EB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D3B28071-75C7-49B0-8561-B1CD76268EB7} = {9EF2C8CD-B94D-46AB-ABD2-EB19929B1784}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {821E39E6-0BB8-498C-9510-D913968AA6FF}
