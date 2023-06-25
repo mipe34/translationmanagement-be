@@ -7,19 +7,12 @@ using TranslationManagement.Dal.Enums;
 
 namespace TranslationManagement.Bll.Models.TransactionJob
 {
-    public class UpdateTransactionJobStatusModel
+    public class UpdateTranslationJobStatusModel
     {
         public int JobId { get; set; }
         
         public int TranslatorId { get; set; }
       
         public JobStatusEnum NewStatus { get; set; }
-
-        public UpdateTransactionJobStatusModel(int jobId, int translatorId, JobStatusEnum newStatus)
-        {
-            JobId = jobId;
-            TranslatorId = translatorId;
-            NewStatus = newStatus;
-        }
     }
 }

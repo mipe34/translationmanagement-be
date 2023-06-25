@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using TranslationManagement.Dal;
+using TranslationManagement.Bll.Services;
 
 namespace TranslationManagement.Api
 {
@@ -26,6 +27,8 @@ namespace TranslationManagement.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TranslationManagement.Api", Version = "v1" });
             });
 
+            services.AddAutoMapper(typeof(AutoMapperProfile));
+
             services.AddCors(options =>
             {
                 options.AddPolicy("DevelopmentCors",
@@ -41,6 +44,8 @@ namespace TranslationManagement.Api
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite("Data Source=TranslationAppDatabase.db"));
+
+            services.AddScoped<TranslationJobService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

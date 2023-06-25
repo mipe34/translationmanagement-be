@@ -1,14 +1,10 @@
 ﻿using External.ThirdParty.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
+using TranslationManagement.Bll.Models;
 using TranslationManagement.Bll.Models.TransactionJob;
 using TranslationManagement.Dal;
 using TranslationManagement.Dal.Enums;
@@ -26,35 +22,42 @@ namespace TranslationManagement.Bll.Services
 
         public TranslationJobService(ILogger<TranslationJobService> logger, AppDbContext ctx)
         {
-            if(ctx == null) throw new ArgumentNullException(nameof(ctx));
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            _logger = logger;
             _context = ctx;
         }
 
         public TranslationJob[] GetJobs()
         {
             return _context.TranslationJobs.ToArray();
-        }   
-        public bool CreateJob(TranslationJob job)
+        }
+        public TranslationJob CreateJob(CreateTranslationJobModel createJobModel)
         {
-            job.Status = JobStatusEnum.New;
-            SetPrice(job);
-            _context.TranslationJobs.Add(job);
+            var jobEntity = new TranslationJob()
+            {
+                Status = JobStatusEnum.New,
+                CustomerName = createJobModel.CustomerName,
+                OriginalContent = createJobModel.OriginalContent,
+            };
+            jobEntity.SetPrice(PricePerCharacter);
+            _context.TranslationJobs.Add(jobEntity);
             bool success = _context.SaveChanges() > 0;
             if (success)
             {
                 var notificationSvc = new UnreliableNotificationService();
                 //TODO refactor calling notification service more effectively
-                while (!notificationSvc.SendNotification("Job created: " + job.Id).Result)
+                while (!notificationSvc.SendNotification($"Job created: {jobEntity.Id}").Result)
                 {
                 }
 
                 _logger.LogInformation("New job notification sent");
+                return jobEntity;
             }
 
-            return success;
+            return null;
         }
 
-        public bool CreateJobWithFile(CreateTransactionJobFileModel transactionJobFileModel)
+        public TranslationJob CreateJobWithFile(CreateTranslationJobFileModel transactionJobFileModel)
         {
             using var reader = new StreamReader(transactionJobFileModel.FileStream);
             string content;
@@ -74,44 +77,34 @@ namespace TranslationManagement.Bll.Services
             {
                 throw new NotSupportedException("unsupported file");
             }
-
-            var newJob = new TranslationJob()
+            var createTranlationJobModel = new CreateTranslationJobModel()
             {
-                OriginalContent = content,
-                TranslatedContent = string.Empty,
                 CustomerName = customerName ?? transactionJobFileModel.CustomerName,
+                OriginalContent = content
             };
 
-            SetPrice(newJob);
-
-            return CreateJob(newJob);
+            return CreateJob(createTranlationJobModel);
         }
 
-        public string UpdateJobStatus(UpdateTransactionJobStatusModel transactionJobStatusModel)
+        public ActionResultModel<TranslationJob> UpdateJobStatus(UpdateTranslationJobStatusModel transactionJobStatusModel)
         {
             _logger.LogInformation($"Job status update request received: {transactionJobStatusModel.NewStatus} for job {transactionJobStatusModel.JobId} by translator {transactionJobStatusModel.TranslatorId}");
-            //if (typeof(JobStatuses).GetProperties().Count(prop => prop.Name == newStatus) == 0)
-            //{
-            //    return "invalid status";
-            //}
 
-            var job = _context.TranslationJobs.Single(j => j.Id == transactionJobStatusModel.JobId);
+            var job = _context.TranslationJobs.SingleOrDefault(j => j.Id == transactionJobStatusModel.JobId);
+            if (job == null)
+                return new ActionResultModel<TranslationJob>(false) { Message = $"Translation job with id {transactionJobStatusModel.JobId} not found" };
 
-            bool isInvalidStatusChange = (job.Status == JobStatusEnum.New && transactionJobStatusModel.NewStatus == JobStatusEnum.Completed) ||
-                                         job.Status == JobStatusEnum.Completed || transactionJobStatusModel.NewStatus == JobStatusEnum.New;
-            if (isInvalidStatusChange)
+            if (job.SetStatus(transactionJobStatusModel.NewStatus))
             {
-                return "invalid status change";
+                _context.SaveChanges();
+                return new ActionResultModel<TranslationJob>(true) { Result = job };
             }
 
-            job.Status = transactionJobStatusModel.NewStatus;
-            _context.SaveChanges();
-            return "updated";
-        }
-
-        internal void SetPrice(TranslationJob job)
-        {
-            job.Price = job.OriginalContent.Length * PricePerCharacter;
+            return new ActionResultModel<TranslationJob>(false)
+            {
+                Result = job,
+                Message = $"Invalid job status change from {job.Status} to {transactionJobStatusModel.NewStatus}"
+            };
         }
     }
 }

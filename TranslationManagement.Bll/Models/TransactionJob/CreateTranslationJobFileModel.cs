@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TranslationManagement.Bll.Models.TransactionJob
 {
-    public class CreateTransactionJobFileModel
+    public class CreateTranslationJobFileModel
     {
         public string FileName { get; set; }
 
@@ -15,7 +15,7 @@ namespace TranslationManagement.Bll.Models.TransactionJob
 
         public string CustomerName { get; set; }
 
-        public CreateTransactionJobFileModel(string fileName, Stream fileStream)
+        public CreateTranslationJobFileModel(string fileName, Stream fileStream)
         {
             FileName = fileName;
             FileStream = fileStream;

@@ -1,18 +1,12 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
-using External.ThirdParty.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TranslationManagement.Api.Controlers;
+using TranslationManagement.Api.Models.TranslationJob;
 using TranslationManagement.Bll.Models.TransactionJob;
 using TranslationManagement.Bll.Services;
-using TranslationManagement.Dal;
-using TranslationManagement.Dal.Enums;
 using TranslationManagement.Dal.Models;
 
 namespace TranslationManagement.Api.Controllers
@@ -21,41 +15,59 @@ namespace TranslationManagement.Api.Controllers
     [Route("api/jobs/[action]")]
     public class TranslationJobController : ControllerBase
     {
-        private AppDbContext _context;
-        private readonly ILogger<TranslatorManagementController> _logger;
+        private readonly IMapper _mapper;
         private readonly TranslationJobService _translationJobService;
 
-        public TranslationJobController(ILogger<TranslatorManagementController> logger, TranslationJobService translationJobService)
+
+        public TranslationJobController(IMapper mapper, TranslationJobService translationJobService)
         {
-            _logger = logger;
+            _mapper = mapper;
             _translationJobService = translationJobService;
         }
 
         [HttpGet]
-        public TranslationJob[] GetJobs()
+        public ActionResult GetJobs()
         {
-            return _translationJobService.GetJobs();
+            var dto = _mapper.Map<TranslationJob[], TranslationJobDto[]>(_translationJobService.GetJobs());
+            return Ok(dto);
         }
 
         [HttpPost]
-        public bool CreateJob(TranslationJob job)
+        public ActionResult CreateJob(CreateTranslationJobDto jobDto)
         {
-            return _translationJobService.CreateJob(job);
+            var jobModel = _mapper.Map<CreateTranslationJobModel>(jobDto);
+            var result = _translationJobService.CreateJob(jobModel);
+            if(result == null) return StatusCode(StatusCodes.Status500InternalServerError, "Cannot create job.");
+            return Ok(result);
         }
 
         [HttpPost]
-        public bool CreateJobWithFile(IFormFile file, string customer)
+        public ActionResult CreateJobWithFile(IFormFile file, string customer)
         {
             using var stream = file.OpenReadStream();
-            var transactionJobModel = new CreateTransactionJobFileModel(file.FileName, stream) { CustomerName = customer };
-            var result = _translationJobService.CreateJobWithFile(transactionJobModel);
-            return result;
+            var transactionJobModel = new CreateTranslationJobFileModel(file.FileName, stream) { CustomerName = customer };
+            try
+            {
+                var result = _translationJobService.CreateJobWithFile(transactionJobModel);
+                if(result == null) return StatusCode(StatusCodes.Status500InternalServerError, "Cannot create job.");
+                return Ok(result);
+            }
+            catch(NotSupportedException ex)
+            {
+                return BadRequest($"Cannot create job. Message: {ex.Message}");
+            }
         }
 
         [HttpPost]
-        public string UpdateJobStatus(int jobId, int translatorId, JobStatusEnum newStatus)
+        public ActionResult UpdateJobStatus(UpdateTranslationJobStatusDto jobDto)
         {
-            return _translationJobService.UpdateJobStatus(new UpdateTransactionJobStatusModel(jobId, translatorId, newStatus));
+            var model = _mapper.Map<UpdateTranslationJobStatusModel>(jobDto);
+            var result = _translationJobService.UpdateJobStatus(model);
+            if (result.Success)
+            {
+                return Ok(result.Result);
+            }
+            return BadRequest(result.Message);
         }
     }
 }
