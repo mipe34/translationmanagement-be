@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,23 +32,23 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreateJob(CreateTranslationJobDto jobDto)
+        public async Task<ActionResult> CreateJob(CreateTranslationJobDto jobDto)
         {
             var jobModel = _mapper.Map<CreateTranslationJobModel>(jobDto);
-            var result = _translationJobService.CreateJob(jobModel);
+            var result = await _translationJobService.CreateJobAsync(jobModel);
             if(result == null) return StatusCode(StatusCodes.Status500InternalServerError, "Cannot create job.");
             return Ok(result);
         }
 
         [HttpPost]
         [Route("createJobWithFile")]
-        public ActionResult CreateJobWithFile(IFormFile file, string customer)
+        public async Task<ActionResult> CreateJobWithFile(IFormFile file, string customer)
         {
             using var stream = file.OpenReadStream();
             var transactionJobModel = new CreateTranslationJobFileModel(file.FileName, stream) { CustomerName = customer };
             try
             {
-                var result = _translationJobService.CreateJobWithFile(transactionJobModel);
+                var result = await _translationJobService.CreateJobWithFileAsync(transactionJobModel);
                 if(result == null) return StatusCode(StatusCodes.Status500InternalServerError, "Cannot create job.");
                 return Ok(result);
             }

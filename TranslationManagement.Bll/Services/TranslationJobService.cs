@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using TranslationManagement.Bll.Models;
 using TranslationManagement.Bll.Models.TransactionJob;
@@ -33,7 +34,7 @@ namespace TranslationManagement.Bll.Services
         {
             return _context.TranslationJobs.ToArray();
         }
-        public TranslationJob CreateJob(CreateTranslationJobModel createJobModel)
+        public async Task<TranslationJob> CreateJobAsync(CreateTranslationJobModel createJobModel)
         {
             var jobEntity = new TranslationJob()
             {
@@ -43,13 +44,15 @@ namespace TranslationManagement.Bll.Services
             };
             jobEntity.SetPrice(PricePerCharacter);
             _context.TranslationJobs.Add(jobEntity);
-            bool success = _context.SaveChanges() > 0;
+            bool success = await _context.SaveChangesAsync() > 0;
             if (success)
             {
                 var notificationSvc = new UnreliableNotificationService();
-                //TODO refactor calling notification service more effectively
                 while (!notificationSvc.SendNotification($"Job created: {jobEntity.Id}").Result)
                 {
+                    // at least release the thread
+                    // TODO - refactor using message queue (eg. rabbitMQ)
+                    await Task.Delay(1000); 
                 }
 
                 _logger.LogInformation("New job notification sent");
@@ -59,12 +62,12 @@ namespace TranslationManagement.Bll.Services
             return null;
         }
 
-        public TranslationJob CreateJobWithFile(CreateTranslationJobFileModel translationJobFileModel)
+        public async Task<TranslationJob> CreateJobWithFileAsync(CreateTranslationJobFileModel translationJobFileModel)
         {
             var fileReader = _translationJobFileReaderFactory.GetTranslationJobFileReader(translationJobFileModel.FileName);
             var jobModel = fileReader.ReadFile(translationJobFileModel);
 
-            return CreateJob(jobModel);
+            return await CreateJobAsync(jobModel);
         }
 
         public ActionResultModel<TranslationJob> UpdateJobStatus(UpdateTranslationJobStatusModel transactionJobStatusModel)
