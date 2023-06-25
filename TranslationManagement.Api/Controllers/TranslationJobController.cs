@@ -2,8 +2,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using TranslationManagement.Api.Controlers;
 using TranslationManagement.Api.Models.TranslationJob;
 using TranslationManagement.Bll.Models.TransactionJob;
 using TranslationManagement.Bll.Services;
@@ -12,7 +10,7 @@ using TranslationManagement.Dal.Models;
 namespace TranslationManagement.Api.Controllers
 {
     [ApiController]
-    [Route("api/jobs/[action]")]
+    [Route("api/[controller]")]
     public class TranslationJobController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -42,6 +40,7 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
+        [Route("createJobWithFile")]
         public ActionResult CreateJobWithFile(IFormFile file, string customer)
         {
             using var stream = file.OpenReadStream();
@@ -58,7 +57,8 @@ namespace TranslationManagement.Api.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
+        [Route("status")]
         public ActionResult UpdateJobStatus(UpdateTranslationJobStatusDto jobDto)
         {
             var model = _mapper.Map<UpdateTranslationJobStatusModel>(jobDto);
